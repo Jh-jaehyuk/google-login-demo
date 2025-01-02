@@ -29,25 +29,30 @@ public class OAuthController {
     }
 
     @PostMapping("/google/access-token")
-    public ResponseEntity<String> googleAccessTokenUri(@RequestBody String code) {
+    public String googleAccessTokenUri(@RequestBody Map<String, String> body) {
         log.info("controller -> googleAccessTokenUri() called!");
+        String code = body.get("code");
         log.info("controller -> googleAccessTokenUri() code: {}", code);
         String accessToken = oAuthService.requestAccessToken(code);
         log.info("controller -> googleAccessTokenUri() accessToken: {}", accessToken);
-        return ResponseEntity.ok(accessToken);
+        return accessToken;
     }
 
     @PostMapping("google/userinfo")
-    public ResponseEntity<String> googleUserinfoUri(@RequestBody String accessToken) {
+    public ResponseEntity<String> googleUserinfoUri(@RequestBody Map<String, String> body) {
         log.info("controller -> googleUserinfoUri() called!");
+        String accessToken = body.get("accessToken");
         log.info("controller -> googleUserinfoUri() accessToken: {}", accessToken);
         ResponseEntity<String> response = oAuthService.requestUserinfo(accessToken);
         return ResponseEntity.ok(response.getBody());
     }
 
     @PostMapping("google/redis-user-token")
-    public ResponseEntity<String> saveUserTokenToRedis(@RequestBody String email) {
-        User user = userService.findByEmail(email);
+    public ResponseEntity<String> saveUserTokenToRedis(@RequestBody Map<String, String> body) {
+        log.info("controller -> saveUserTokenToRedis() called!");
+        String providerId = body.get("id");
+        log.info("controller -> saveUserTokenToRedis() providerId: {}", providerId);
+        User user = userService.findByProviderId(providerId);
 
         String response = redisService.setUserTokenToRedis(user);
         return ResponseEntity.ok(response);

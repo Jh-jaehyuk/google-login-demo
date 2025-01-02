@@ -1,6 +1,6 @@
 package com.example.loginDemo.oauth.service;
 
-import com.example.loginDemo.oauth.service.response.AccessTokenResponse;
+import com.example.loginDemo.oauth.dto.AccessTokenDto;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -8,12 +8,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URLDecoder;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -46,9 +44,6 @@ public class OAuthServiceImpl implements OAuthService {
 
     @Override
     public String requestAccessToken(String code) {
-//        String encodedCode = URLEncoder.encode(code, StandardCharsets.UTF_8);
-//        log.info("encodedCode: {}", encodedCode);
-
         String decodedCode = URLDecoder.decode(code, StandardCharsets.UTF_8);
 
         Map<String, String> requestBody = Map.of(
@@ -59,41 +54,39 @@ public class OAuthServiceImpl implements OAuthService {
                 "grant_type", "authorization_code"
         );
 
-        HttpEntity<Map<String, String>> googleTokenRequest = new HttpEntity<>(requestBody);
+        HttpHeaders headers = new HttpHeaders();
 
-        ResponseEntity<String> response = restTemplate.exchange(
+        HttpEntity<Map<String, String>> googleTokenRequest = new HttpEntity<>(requestBody, headers);
+
+        ResponseEntity<String> responseEntity = restTemplate.exchange(
                 tokenRedirectUri,
                 HttpMethod.POST,
                 googleTokenRequest,
                 String.class
         );
+        log.info("requestUserinfo responseEntity: {}", responseEntity.getBody());
 
         ObjectMapper objectMapper = new ObjectMapper();
-        AccessTokenResponse accessTokenResponse = null;
-
+        AccessTokenDto accessTokenDto = null;
         try {
-            accessTokenResponse = objectMapper.readValue(response.getBody(), AccessTokenResponse.class);
+            accessTokenDto = objectMapper.readValue(responseEntity.getBody(), AccessTokenDto.class);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
 
-        log.info("access_token_response: {}", accessTokenResponse);
-
-        return accessTokenResponse.getAccess_token();
+        return accessTokenDto.getAccess_token();
     }
 
     @Override
     public ResponseEntity<String> requestUserinfo(String accessToken) {
-
+        String decodedToken = URLDecoder.decode(accessToken, StandardCharsets.UTF_8);
+        log.info("decodedToken: {}", decodedToken);
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.set("Authorization", "Bearer " + accessToken);
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
+        httpHeaders.setBearerAuth(accessToken);
 
-        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create(userinfoRedirectUri + accessToken));
+        RequestEntity<Void> requestEntity = new RequestEntity<>(httpHeaders, HttpMethod.GET, URI.create(userinfoRedirectUri));
         ResponseEntity<String> responseEntity = restTemplate.exchange(requestEntity, String.class);
         log.info("requestUserinfo responseEntity: {}", responseEntity.getBody());
-//        Map response = restTemplate.getForObject(
-//                userinfoRedirectUri + accessToken, Map.class);
 
         return responseEntity;
     }

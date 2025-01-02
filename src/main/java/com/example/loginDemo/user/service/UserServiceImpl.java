@@ -22,4 +22,11 @@ public class UserServiceImpl implements UserService {
 
         return maybeUser.orElse(null);
     }
+
+    @Override
+    public User findByProviderId(String providerId) {
+        Optional<User> maybeUser = userRepository.findByProviderId(providerId);
+
+        return maybeUser.orElse(null);
+    }
 }

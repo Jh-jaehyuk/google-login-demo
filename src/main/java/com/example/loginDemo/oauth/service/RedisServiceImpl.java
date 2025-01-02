@@ -14,7 +14,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RedisServiceImpl implements RedisService {
     @Autowired
-    private RedisTemplate<String, Long> redisTemplate;
+    private RedisTemplate<String, String> redisTemplate;
 
     @Override
     public String setUserTokenToRedis(User user) {
@@ -23,7 +23,7 @@ public class RedisServiceImpl implements RedisService {
         }
 
         String userToken = UUID.randomUUID().toString();
-        redisTemplate.opsForValue().set(userToken, user.getId());
+        redisTemplate.opsForValue().set(userToken, String.valueOf(user.getId()));
         return userToken;
     }
 }
