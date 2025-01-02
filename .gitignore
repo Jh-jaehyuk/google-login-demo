@@ -44,3 +44,6 @@ src/main/resources/application-oauth.yaml
 
 # exclude gradle/
 gradle/*
+
+# exclude .DS_Store
+.DS_Store
