@@ -35,7 +35,7 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     public String googleLoginAddress() {
         String redirectUri = String.format(
-                "https://accounts.google.com/o/oauth2/v2/auth?scope=profile&response_type=code&client_id=%s.apps.googleusercontent.com&redirect_uri=%s",
+                "https://accounts.google.com/o/oauth2/v2/auth?scope=profile+email&response_type=code&client_id=%s.apps.googleusercontent.com&redirect_uri=%s",
                 clientId, loginRedirectUri);
         log.info("loginRedirectUri: {}", loginRedirectUri);
         log.info("redirectUri: {}", redirectUri);

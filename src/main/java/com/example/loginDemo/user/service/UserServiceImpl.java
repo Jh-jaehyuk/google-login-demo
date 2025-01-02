@@ -1,5 +1,6 @@
 package com.example.loginDemo.user.service;
 
+import com.example.loginDemo.user.entity.Role;
 import com.example.loginDemo.user.entity.User;
 import com.example.loginDemo.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,18 @@ public class UserServiceImpl implements UserService {
         Optional<User> maybeUser = userRepository.findByProviderId(providerId);
 
         return maybeUser.orElse(null);
+    }
+
+    @Override
+    public User create(String name, String email, String picture, String provider, String providerId, String registerId) {
+        User user = User.builder()
+                .name(name)
+                .email(email)
+                .picture(picture)
+                .provider(provider)
+                .providerId(providerId)
+                .registerId(registerId)
+                .role(Role.USER).build();
+        return userRepository.save(user);
     }
 }
